@@ -181,7 +181,11 @@ func (h *HasController) CreateComponent(componentSpec appservice.ComponentSpec, 
 }
 
 // CreateComponentWithDockerSource creates a component based on container image source.
-func (h *HasController) CreateComponentWithDockerSource(applicationName, componentName, namespace, gitSourceURL, containerImageSource, outputContainerImage, secret string) (*appservice.Component, error) {
+func (h *HasController) CreateComponentWithDockerSource(applicationName, componentName, namespace, gitSourceURL, containerImageSource, outputContainerImage, secret string, port int) (*appservice.Component, error) {
+	if port == 0 {
+		port = 8081
+	}
+
 	component := &appservice.Component{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      componentName,
@@ -201,7 +205,7 @@ func (h *HasController) CreateComponentWithDockerSource(applicationName, compone
 			Secret:         secret,
 			ContainerImage: outputContainerImage,
 			Replicas:       pointer.Int(1),
-			TargetPort:     8081,
+			TargetPort:     port,
 			Route:          "",
 		},
 	}
