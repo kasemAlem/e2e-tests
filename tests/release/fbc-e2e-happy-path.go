@@ -2,6 +2,7 @@ package release
 
 import (
 	// "fmt"
+
 	"time"
 
 	// "github.com/devfile/library/v2/pkg/util"
@@ -32,27 +33,49 @@ var _ = framework.ReleaseSuiteDescribe("[HACBS-2385] e2e test for fbc happy path
 	var devNamespace = "dev-release-team"
 	// var managedNamespace = "managed-release-team-tenant"
 
-	stageOptions := utils.Options{
-		ToolchainApiUrl: "https://api-toolchain-host-operator.apps.stone-stg-host.qc0p.p1.openshiftapps.com" + "/workspaces/" + devNamespace,
+	//fmt.Sprintf("%s/workspaces/%s", url, devNamespace),
+	//url := "https://api-toolchain-host-operator.apps.stone-stg-host.qc0p.p1.openshiftapps.com"
+	stageOptions_dev := utils.Options{
+		ToolchainApiUrl: "https://api-toolchain-host-operator.apps.stone-stg-host.qc0p.p1.openshiftapps.com",
 		KeycloakUrl:     "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token",
 		OfflineToken:    stageOfflineToken,
 	}
-	GinkgoWriter.Printf("\nToolchainApiUrl : %s\n", stageOptions.ToolchainApiUrl)
+
+	// stageOptions_managed := utils.Options{
+	// 	ToolchainApiUrl: "https://api-toolchain-host-operator.apps.stone-stg-host.qc0p.p1.openshiftapps.com",
+	// 	KeycloakUrl:     "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token",
+	// 	OfflineToken:    stageOfflineToken,
+
+	// }
+
+	dev_fw, err := framework.NewFrameworkWithTimeout(
+		devNamespace,
+		time.Minute*60,
+		stageOptions_dev,
+	)
+	Expect(err).NotTo(HaveOccurred())
+
 	BeforeAll(func() {
 		// Initialize the tests controllers
-
-		fw, err = framework.NewFrameworkWithTimeout(
-			devNamespace,
-			time.Minute*60,
-			stageOptions,
-		)
+		GinkgoWriter.Printf("\n Toolchain: %s\n", stageOptions_dev.ToolchainApiUrl)
+		// dev_fw, err := framework.NewFrameworkWithTimeout(
+		// 	devNamespace,
+		// 	time.Minute*60,
+		// 	stageOptions_dev,
+		// )
+		// Expect(err).NotTo(HaveOccurred())
+		// managed_fw, err = framework.NewFrameworkWithTimeout(
+		// 	devNamespace,
+		// 	time.Minute*60,
+		// 	stageOptions_managed,
+		// )
 
 		// TODO Kasem
-		_, err = fw.AsKubeDeveloper.HasController.CreateApplication(fbcApplicationName, fw.UserNamespace)
+		_, err = dev_fw.AsKubeDeveloper.HasController.CreateApplication(fbcApplicationName, dev_fw.UserNamespace)
 		Expect(err).NotTo(HaveOccurred())
 
-		component, err = fw.AsKubeDeveloper.HasController.CreateComponentWithDockerSource(fbcApplicationName, fbcComponentName, fw.UserNamespace, fbcSourceGitUrl, "", "", "", 50051)
-		//
+		component, err = dev_fw.AsKubeDeveloper.HasController.CreateComponentWithDockerSource(fbcApplicationName, fbcComponentName, dev_fw.UserNamespace, fbcSourceGitUrl, "", "", "", 50051)
+		Expect(err).NotTo(HaveOccurred())
 
 	})
 
@@ -70,9 +93,10 @@ var _ = framework.ReleaseSuiteDescribe("[HACBS-2385] e2e test for fbc happy path
 	var _ = Describe("Post-release verification", func() {
 
 		It("verify app and component are created.", func() {
-			component, err = fw.AsKubeAdmin.HasController.GetComponent(fbcComponentName, fw.UserNamespace)
+			_, err := fw.AsKubeAdmin.HasController.GetComponent(fbcComponentName, dev_fw.UserNamespace)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(fw.AsKubeAdmin.HasController.WaitForComponentPipelineToBeFinished(component, "", 2)).To(Succeed())
+
 		})
 
 		// It("verifies that a Release CR should have been created in the dev namespace", func() {

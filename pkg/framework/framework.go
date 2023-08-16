@@ -53,6 +53,10 @@ func NewFrameworkWithTimeout(userName string, timeout time.Duration, options ...
 	var k *kubeCl.K8SClient
 	var supplyopts utils.Options
 
+	if len(options) > 0 {
+		options[0].ToolchainApiUrl = fmt.Sprintf("%s/workspaces/%s", options[0].ToolchainApiUrl, userName)
+	}
+
 	isStage, err := utils.CheckOptions(options)
 	if err != nil {
 		return nil, err
