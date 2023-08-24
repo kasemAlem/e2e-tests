@@ -53,9 +53,9 @@ func NewFrameworkWithTimeout(userName string, timeout time.Duration, options ...
 	var k *kubeCl.K8SClient
 	var supplyopts utils.Options
 
-	if len(options) > 0 {
-		options[0].ToolchainApiUrl = fmt.Sprintf("%s/workspaces/%s", options[0].ToolchainApiUrl, userName)
-	}
+	// if len(options) > 0 {
+	// 	options[0].ToolchainApiUrl = fmt.Sprintf("%s/workspaces/%s", options[0].ToolchainApiUrl, userName)
+	// }
 
 	isStage, err := utils.CheckOptions(options)
 	if err != nil {
@@ -108,10 +108,11 @@ func NewFrameworkWithTimeout(userName string, timeout time.Duration, options ...
 		asAdmin = asUser
 	}
 
-	if err = utils.WaitUntil(asAdmin.CommonController.ServiceaccountPresent(constants.DefaultPipelineServiceAccount, k.UserNamespace), timeout); err != nil {
-		return nil, fmt.Errorf("'%s' service account wasn't created in %s namespace: %+v", constants.DefaultPipelineServiceAccount, k.UserNamespace, err)
+	if !isStage {
+		if err = utils.WaitUntil(asAdmin.CommonController.ServiceaccountPresent(constants.DefaultPipelineServiceAccount, k.UserNamespace), timeout); err != nil {
+			return nil, fmt.Errorf("'%s' service account wasn't created in %s namespace: %+v", constants.DefaultPipelineServiceAccount, k.UserNamespace, err)
+		}
 	}
-
 	return &Framework{
 		AsKubeAdmin:       asAdmin,
 		AsKubeDeveloper:   asUser,

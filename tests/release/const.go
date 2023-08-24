@@ -48,8 +48,8 @@ const (
 	addtionalOutputContainerImage   string = constants.DefaultReleasedImagePushRepo
 	pyxisStageImagesApiEndpoint     string = "https://pyxis.preprod.api.redhat.com/v1/images/id/"
 
-	fbcApplicationName string = "fbc-application"
-	fbcComponentName   string = "fbc-component"
+	fbcApplicationName string = "fbc-e2e-application"
+	fbcComponentName   string = "fbc-e2e-component"
 	fbcSourceGitUrl    string = "https://github.com/redhat-appstudio-qe/fbc-sample-repo"
 
 	namespaceCreationTimeout              = 5 * time.Minute

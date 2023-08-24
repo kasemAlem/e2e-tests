@@ -60,6 +60,15 @@ const (
 	// Cert auth for accessing Pyxis stage external registry
 	PYXIS_STAGE_CERT_ENV string = "PYXIS_STAGE_CERT"
 
+	// Offline token to run e2e-tests against RHTAP
+	RHTAP_OFFLINE_TOKEN = "OFFLINE_TOKEN"
+
+	// Keycloak URL used to create framework object of RH RHTAP-Stage
+	RHTAP_KEYLOAK_URL = "KEYLOAK_URL"
+
+	// Toolchain Api URL used to create framework object of RH RHTAP-Stage
+	RHTAP_TOOLCHAIN_API_URL = "TOOLCHAIN_API_URL"
+
 	// Bundle ref for overriding the default Java build bundle specified in BuildPipelineSelectorYamlURL
 	CUSTOM_JAVA_PIPELINE_BUILD_BUNDLE_ENV string = "CUSTOM_JAVA_PIPELINE_BUILD_BUNDLE"
 
