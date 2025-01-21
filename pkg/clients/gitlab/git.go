@@ -50,14 +50,19 @@ func (gc *GitlabClient) ExistsBranch(projectID, branchName string) (bool, error)
 
 // DeleteBranch deletes a branch by its name and project ID
 func (gc *GitlabClient) DeleteBranch(projectID, branchName string) error {
-
-	_, err := gc.client.Branches.DeleteBranch(projectID, branchName)
+	resp, err := gc.client.Branches.DeleteBranch(projectID, branchName)
 	if err != nil {
+		// Check if the error is due to the branch not existing
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			// Branch does not exist, log a message and return nil
+			fmt.Printf("Branch %s in projectID %s does not exist\n", branchName, projectID)
+			return nil
+		}
+		// For other errors, return the error
 		return fmt.Errorf("failed to delete branch %s: %v", branchName, err)
 	}
 
-	fmt.Printf("Deleted branch: %s", branchName)
-
+	fmt.Printf("Deleted branch: %s\n", branchName)
 	return nil
 }
 
@@ -104,13 +109,20 @@ func (gc *GitlabClient) GetMergeRequests() ([]*gitlab.MergeRequest, error) {
 
 // CloseMergeRequest closes merge request in Gitlab repo by given MR IID
 func (gc *GitlabClient) CloseMergeRequest(projectID string, mergeRequestIID int) error {
-
 	// Get merge requests using Gitlab client
-	_, _, err := gc.client.MergeRequests.GetMergeRequest(projectID, mergeRequestIID, nil)
+	_, resp, err := gc.client.MergeRequests.GetMergeRequest(projectID, mergeRequestIID, nil)
 	if err != nil {
+		// Check if the error is due to the MR not existing
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			// MR does not exist, log a message and return nil
+			fmt.Printf("Merge request with IID %d in projectID %s does not exist\n", mergeRequestIID, projectID)
+			return nil
+		}
+		// For other errors, return the error
 		return fmt.Errorf("failed to get MR of IID %d in projectID %s, %v", mergeRequestIID, projectID, err)
 	}
 
+	// MR exists, proceed to close it
 	_, _, err = gc.client.MergeRequests.UpdateMergeRequest(projectID, mergeRequestIID, &gitlab.UpdateMergeRequestOptions{
 		StateEvent: gitlab.Ptr("close"),
 	})
