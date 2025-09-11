@@ -483,6 +483,27 @@ var _ = framework.IntegrationServiceSuiteDescribe("Creation of group snapshots f
 			It("get all group snapshots and check if pr-group annotation contains all components", func() {
 				// get all group snapshots
 				Eventually(func() error {
+
+					// Debugging START
+					var compSnapshotsInApp *appstudioApi.SnapshotList
+					GinkgoWriter.Println("Getting all group snapshots")
+					compSnapshotsInApp, err = f.AsKubeAdmin.HasController.GetAllComponentSnapshotsForApplication(applicationName, testNamespace)
+					if err != nil {
+						GinkgoWriter.Println(fmt.Sprintf("Failed to get all components for application: %v", err))
+						return err
+					}
+
+					GinkgoWriter.Println("*************************************************************************************************")
+					for _, snapshotInApp := range compSnapshotsInApp.Items {
+						GinkgoWriter.Println(fmt.Sprintf("Component Snapshot %s  in Application %s: ", snapshotInApp.GetName(), applicationName))
+						GinkgoWriter.Println(fmt.Sprintf("PR Group In Snapshot %s  : ", snapshotInApp.GetAnnotations()[groupSnapshotAnnotation]))
+						GinkgoWriter.Println(fmt.Sprintf("PR Group SHA In Snapshot %s  : ", snapshotInApp.GetLabels()["test.appstudio.openshift.io/pr-group-sha"]))
+						GinkgoWriter.Println(fmt.Sprintf("PR Group SHA In Snapshot %s  : ", snapshotInApp.GetAnnotations()["pac.test.appstudio.openshift.io/source-branch"]))
+
+					}
+					GinkgoWriter.Println("*************************************************************************************************")
+					// Debugging END
+
 					groupSnapshots, err = f.AsKubeAdmin.HasController.GetAllGroupSnapshotsForApplication(applicationName, testNamespace)
 
 					if err != nil {
